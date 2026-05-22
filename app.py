@@ -7,7 +7,6 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
-# Importando a nova estrutura de Scouting atualizada com o estilo coletivo
 from config import SCOUT_PLAYER_SCHEMA, SYSTEM_INSTRUCTION
 
 load_dotenv()
@@ -18,12 +17,12 @@ app = Flask(__name__)
 CORS(app)
 
 def generate_player_scout(jogador, esquema_proprio, estilo_time, caracteristicas):
-    # Organiza os inputs textuais para guiar a análise contextualmente
     lista_caractericas = ", ".join(caracteristicas)
     conteudo_prompt = (
-        f"Analise o jogador '{jogador}' levando em consideração as seguintes características individuais informadas: {lista_caractericas}. "
-        f"Projete essa análise considerando que a nossa equipe atua estruturada em um esquema tático {esquema_proprio} "
-        f"e adota a seguinte identidade/estilo de jogo coletivo: {estilo_time}."
+        f"Analise o jogador ou grupo '{jogador}' levando em consideração as seguintes características individuais informadas: {lista_caractericas}. "
+        f"Considere que a nossa equipe atua estruturada em um esquema tático {esquema_proprio} "
+        f"e o modelo/instruções de jogo coletivo adversário ou proposto é: {estilo_time}.\n\n"
+        f"Defina obrigatoriamente no campo 'tatica_contra_alvo' qual a melhor formação tática detalhada para neutralizar o modelo '{estilo_time}'."
     )
     
     response = client.models.generate_content(
@@ -49,7 +48,6 @@ def root():
 def generate():
     data = request.get_json()
     
-    # Valida se os dados estruturados chegaram corretamente
     if not data:
         return jsonify({
             "status": "error",
@@ -58,7 +56,6 @@ def generate():
         
     jogador = data.get("nome_jogador", "").strip()
     esquema_proprio = data.get("minha_formacao", "4-3-3")
-    # Captura o novo campo de estilo coletivo (como o exemplo do Bayern) ou define um padrão sutil
     estilo_time = data.get("estilo_time", "").strip() or "Equipe equilibrada com manutenção de posse de bola."
     caracteristicas = data.get("caracteristicas_adversario", [])
     
@@ -75,10 +72,7 @@ def generate():
         }), 400
     
     try:
-        # Aciona o modelo passando agora também o estilo coletivo do time
         scout_json_string = generate_player_scout(jogador, esquema_proprio, estilo_time, caracteristicas)
-        
-        # Desserializa a string JSON retornada pelo Gemini em formato nativo
         scout_estruturado = json.loads(scout_json_string)
         
         return jsonify({
