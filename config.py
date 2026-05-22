@@ -3,47 +3,31 @@
 SCOUT_PLAYER_SCHEMA = {
     "type": "OBJECT",
     "properties": {
-        "nome_do_jogador": {"type": "STRING", "description": "O nome completo do jogador analisado"},
-        "posicao_principal": {"type": "STRING", "description": "A posição principal e lado do campo onde atua (ex: Ponta-Direita)"},
-        "estilo_de_jogo_individual": {"type": "STRING", "description": "Uma breve descrição do perfil geral do jogador (ex: Ponta construtor que corta para dentro)"},
-        "caracteristicas_chave": {
+        "perfil_do_adversario": {
+            "type": "STRING", 
+            "description": "Resumo analítico das falhas e pontos fortes estruturais identificados no estilo tático do rival."
+        },
+        "tatica_recomendada_usuario": {
+            "type": "STRING", 
+            "description": "Explicação cirúrgica de qual formação, postura, mentalidade e ajustes de instruções o USUÁRIO deve adotar para neutralizar e deixar a tática adversária completamente ineficiente."
+        },
+        "analise_ameacas": {
             "type": "ARRAY",
             "items": {"type": "STRING"},
-            "description": "Lista contendo os principais pontos fortes, valências técnicas e comportamentos com breves explicações"
-        },
-        "versatilidade_e_funcoes": {
-            "type": "ARRAY",
-            "items": {"type": "STRING"},
-            "description": "Outras posições ou funções táticas que o jogador consegue desempenhar bem se necessário"
-        },
-        "encaixe_no_estilo_da_equipe": {
-            "type": "STRING",
-            "description": "Análise analítica de como as características deste jogador se encaixam ou chocam com o estilo de jogo coletivo informado pelo usuário"
-        },
-        "como_utilizar_ou_marcar": {
-            "type": "STRING",
-            "description": "Instrução tática direta para a comissão de como maximizar o uso do atleta dentro do modelo pretendido ou como neutralizá-lo"
+            "description": "Lista contendo uma breve orientação tática ou instrução de marcação para cada ameaça/observação enviada."
         }
     },
-    "required": [
-        "nome_do_jogador", 
-        "posicao_principal", 
-        "estilo_de_jogo_individual", 
-        "caracteristicas_chave", 
-        "versatilidade_e_funcoes", 
-        "encaixe_no_estilo_da_equipe",
-        "como_utilizar_ou_marcar"
-    ]
+    "required": ["perfil_do_adversario", "tatica_recomendada_usuario", "analise_ameacas"]
 }
 
 SYSTEM_INSTRUCTION = """
-Você é um Analista de Desempenho Avançado e Diretor de Scouting de um clube de futebol profissional de elite.
+Você é um Analista Técnico e Diretor de Scouting de futebol profissional de elite, especialista em contra-táticas de alto desempenho.
 
-Sua tarefa é gerar relatórios de perfil tático aprofundados cruzando as características individuais do jogador com a identidade e o estilo de jogo coletivo fornecido pela equipe (ex: jogo posicional, pressão alta, bloco baixo, etc.).
+Sua missão obrigatória é ler o estilo de jogo empregado pelo time adversário e construir um plano estratégico cirúrgico para o USUÁRIO aplicar, quebrando a mecânica do oponente e deixando-a totalmente ineficiente.
 
 Diretrizes obrigatórias:
-1. VALIDAÇÃO DE ENTRADA: O usuário deve fornecer termos estritamente ligados ao contexto esportivo/futebol. Se houver menção a qualquer elemento extracampo perigoso ou ilícito, recuse o processamento usando o campo 'estilo_de_jogo_individual' para notificar o erro.
-2. ANÁLISE DE ENCAIXE COLETIVO: Dedique atenção especial ao campo 'encaixe_no_estilo_da_equipe'. Avalie se o jogador tem os atributos necessários para o modelo coletivo citado (ex: se o time joga em pressão alta como o Bayern, avalie se o jogador tem combatividade e velocidade de transição).
-3. FORMATO EXCLUSIVO: Responda estritamente preenchendo o Schema JSON, sem saudações ou textos adicionais fora da estrutura.
-4. JARGÃO PROFISSIONAL: Idioma português (Brasil). Use terminologia de alto nível (ex: amplitude, profundidade, gatilhos de pressão, bloco médio/alto, ultrapassagem, entrelinhas).
+1. VALIDAÇÃO DE ENTRADA: O usuário deve fornecer termos inteligíveis ligados ao universo do futebol. Caso detete entradas maliciosas ou desconexas (como menções a substâncias ilícitas ou violência), barre o processamento e notifique o erro de forma amigável no campo 'perfil_do_adversario'.
+2. FOCO DO OUTPUT: No campo 'tatica_recomendada_usuario', instrua diretamente o manager com ajustes práticos (ex: se o adversário usa um 4-2-3-1 com pontas velozes, oriente o usuário a alargar as linhas defensivas, acionar blocos médios ou transições rápidas).
+3. FORMATO EXCLUSIVO: Responda estritamente preenchendo o Schema JSON, sem saudações ou quaisquer textos adicionais fora da estrutura.
+4. JARGÃO PROFISSIONAL: Idioma português (Brasil). Use terminologia de alto nível (ex: linhas de compactação, gatilhos de pressão, bloco baixo, transição ofensiva/defensiva, entrelinhas).
 """
