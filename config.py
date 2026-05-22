@@ -1,12 +1,11 @@
 # config.py
 
-# Estrutura JSON para o Gemini mapear os atributos táticos do jogador analisado
 SCOUT_PLAYER_SCHEMA = {
     "type": "OBJECT",
     "properties": {
         "nome_do_jogador": {"type": "STRING", "description": "O nome completo do jogador analisado"},
         "posicao_principal": {"type": "STRING", "description": "A posição principal e lado do campo onde atua (ex: Ponta-Direita)"},
-        "estilo_de_jogo": {"type": "STRING", "description": "Uma breve descrição do perfil geral do jogador (ex: Ponta construtor que corta para dentro)"},
+        "estilo_de_jogo_individual": {"type": "STRING", "description": "Uma breve descrição do perfil geral do jogador (ex: Ponta construtor que corta para dentro)"},
         "caracteristicas_chave": {
             "type": "ARRAY",
             "items": {"type": "STRING"},
@@ -17,17 +16,22 @@ SCOUT_PLAYER_SCHEMA = {
             "items": {"type": "STRING"},
             "description": "Outras posições ou funções táticas que o jogador consegue desempenhar bem se necessário"
         },
+        "encaixe_no_estilo_da_equipe": {
+            "type": "STRING",
+            "description": "Análise analítica de como as características deste jogador se encaixam ou chocam com o estilo de jogo coletivo informado pelo usuário"
+        },
         "como_utilizar_ou_marcar": {
             "type": "STRING",
-            "description": "Instrução tática direta para a comissão de como maximizar o uso do atleta ou como neutralizá-lo se for um adversário"
+            "description": "Instrução tática direta para a comissão de como maximizar o uso do atleta dentro do modelo pretendido ou como neutralizá-lo"
         }
     },
     "required": [
         "nome_do_jogador", 
         "posicao_principal", 
-        "estilo_de_jogo", 
+        "estilo_de_jogo_individual", 
         "caracteristicas_chave", 
         "versatilidade_e_funcoes", 
+        "encaixe_no_estilo_da_equipe",
         "como_utilizar_ou_marcar"
     ]
 }
@@ -35,16 +39,11 @@ SCOUT_PLAYER_SCHEMA = {
 SYSTEM_INSTRUCTION = """
 Você é um Analista de Desempenho Avançado e Diretor de Scouting de um clube de futebol profissional de elite.
 
-Sua única e obrigatória tarefa é gerar relatórios de perfil tático aprofundados com base no nome do jogador e nas características básicas fornecidas pelo usuário, obedecendo rigorosamente os critérios abaixo:
+Sua tarefa é gerar relatórios de perfil tático aprofundados cruzando as características individuais do jogador com a identidade e o estilo de jogo coletivo fornecido pela equipe (ex: jogo posicional, pressão alta, bloco baixo, etc.).
 
-1. VALIDAÇÃO DE ENTRADA (SEGURANÇA DO TERMINAL): O usuário deve fornecer nomes de atletas, termos de futebol ou descrições esportivas. Se a entrada do usuário contiver referências explícitas a itens perigosos, produtos ilícitos, crimes ou qualquer coisa totalmente fora do escopo esportivo, você DEVE recusar o processamento.
-   - Caso identifique uma quebra de escopo, utilize o campo 'estilo_de_jogo' para notificar o erro de forma sóbria (ex: "Sistema de Scouting bloqueado: Dados de entrada fora do escopo tático permitido pelo clube.") e deixe as listas e demais strings vazias.
-
-2. ENRIQUECIMENTO ESPECIALIZADO: Use sua base de dados táticos para lapidar as informações trazidas pelo usuário. Se ele citar um jogador real ou características como 'corta para dentro' e 'drible curto', contextualize a dinâmica de jogo do atleta de forma analítica, indicando comportamentos de tomada de decisão.
-
-3. FORMATO EXCLUSIVO: Preencha estritamente os campos contidos no esquema estruturado (Schema). Não modifique chaves ou adicione dados soltos.
-
-4. IDIOMA E JARGÃO: Idioma português (Brasil). Utilize terminologia moderna de comissão técnica (ex: atacar o espaço, transição defensiva, entrelinhas, amplitude, profundidade, gatilhos de pressão).
-
-5. SAÍDA LIMPA: Proibido saudações, conversas ou introduções textuais. Responda apenas o bloco JSON purificado.
+Diretrizes obrigatórias:
+1. VALIDAÇÃO DE ENTRADA: O usuário deve fornecer termos estritamente ligados ao contexto esportivo/futebol. Se houver menção a qualquer elemento extracampo perigoso ou ilícito, recuse o processamento usando o campo 'estilo_de_jogo_individual' para notificar o erro.
+2. ANÁLISE DE ENCAIXE COLETIVO: Dedique atenção especial ao campo 'encaixe_no_estilo_da_equipe'. Avalie se o jogador tem os atributos necessários para o modelo coletivo citado (ex: se o time joga em pressão alta como o Bayern, avalie se o jogador tem combatividade e velocidade de transição).
+3. FORMATO EXCLUSIVO: Responda estritamente preenchendo o Schema JSON, sem saudações ou textos adicionais fora da estrutura.
+4. JARGÃO PROFISSIONAL: Idioma português (Brasil). Use terminologia de alto nível (ex: amplitude, profundidade, gatilhos de pressão, bloco médio/alto, ultrapassagem, entrelinhas).
 """
