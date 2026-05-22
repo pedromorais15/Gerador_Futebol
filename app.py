@@ -7,53 +7,90 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
-from config import SCOUT_SCHEMA, SYSTEM_INSTRUCTION
+# Importando a nova estrutura de Scouting atualizada com o estilo coletivo
+from config import SCOUT_PLAYER_SCHEMA, SYSTEM_INSTRUCTION
 
 load_dotenv()
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 app = Flask(__name__)
 CORS(app)
 
-def processar_contra_medida(minha_formacao, estilo_time, estilo_adversario, ameacas):
-    prompt = f"""
-    Análise de Combate de Linhas Táticas:
-    - Nosso Esquema Inicial: {minha_formacao}
-    - Nosso Estilo Proposto: {estilo_time}
-    - ESTILO DE JOGO ADVERSÁRIO (A SER ANULADO): {estilo_adversario}
-    - Lista de Peças-Chave Oponentes: {', '.join(ameacas)}
-
-    Componha o relatório estratégico focando estritamente em como o usuário deve ajustar suas linhas para anular o estilo rival.
-    """
+def generate_player_scout(jogador, esquema_proprio, estilo_time, caracteristicas):
+    # Organiza os inputs textuais para guiar a análise contextualmente
+    lista_caractericas = ", ".join(caracteristicas)
+    conteudo_prompt = (
+        f"Analise o jogador '{jogador}' levando em consideração as seguintes características individuais informadas: {lista_caractericas}. "
+        f"Projete essa análise considerando que a nossa equipe atua estruturada em um esquema tático {esquema_proprio} "
+        f"e adota a seguinte identidade/estilo de jogo coletivo: {estilo_time}."
+    )
     
     response = client.models.generate_content(
-        model="gemini-3.5-flash",
-        contents=prompt,
+        model="gemini-3.1-flash-lite",
+        contents=conteudo_prompt,
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_INSTRUCTION,
-            response_mime_type="application/json",
-            response_schema=SCOUT_SCHEMA,
+            response_mime_type="application/json", 
+            response_schema=SCOUT_PLAYER_SCHEMA,       
         )
     )
     return response.text
 
+@app.route("/")
+def root():
+    return jsonify({
+        "status": "success",
+        "message": "API Central de Scout AI online!",
+        "version": "2.0"
+    }), 200
+
 @app.route("/generate", methods=["POST"])
 def generate():
-    data = request.get_json() or {}
+    data = request.get_json()
     
-    minha_formacao = data.get("minha_formacao", "4-3-3")
-    estilo_time = data.get("estilo_time", "")
-    estilo_adversario = data.get("estilo_adversario", "")
-    ameacas = data.get("ameacas", [])
-
-    if not estilo_adversario:
-        return jsonify({"status": "error", "message": "Preencha o estilo tático do adversário para prosseguir."}), 400
-
+    # Valida se os dados estruturados chegaram corretamente
+    if not data:
+        return jsonify({
+            "status": "error",
+            "message": "Nenhum dado recebido pelo terminal tático."
+        }), 400
+        
+    jogador = data.get("nome_jogador", "").strip()
+    esquema_proprio = data.get("minha_formacao", "4-3-3")
+    # Captura o novo campo de estilo coletivo (como o exemplo do Bayern) ou define um padrão sutil
+    estilo_time = data.get("estilo_time", "").strip() or "Equipe equilibrada com manutenção de posse de bola."
+    caracteristicas = data.get("caracteristicas_adversario", [])
+    
+    if not jogador:
+        return jsonify({
+            "status": "error",
+            "message": "Identificação do jogador obrigatória para iniciar o mapeamento."
+        }), 400
+        
+    if not isinstance(caracteristicas, list) or len(caracteristicas) == 0:
+        return jsonify({
+            "status": "error",
+            "message": "Insira pelo menos uma característica ou comportamento de campo para análise."
+        }), 400
+    
     try:
-        resultado_string = processar_contra_medida(minha_formacao, estilo_time, estilo_adversario, ameacas)
-        return jsonify({"status": "success", "dados_scout": json.loads(resultado_string)}), 200
+        # Aciona o modelo passando agora também o estilo coletivo do time
+        scout_json_string = generate_player_scout(jogador, esquema_proprio, estilo_time, caracteristicas)
+        
+        # Desserializa a string JSON retornada pelo Gemini em formato nativo
+        scout_estruturado = json.loads(scout_json_string)
+        
+        return jsonify({
+            "status": "success",
+            "dados_scout": scout_estruturado
+        }), 200
+        
     except Exception as e:
-        return jsonify({"status": "error", "message": f"Erro interno do Tactical Engine: {str(e)}"}), 500
+        return jsonify({
+            "status": "error",
+            "message": f"Erro interno na engine analítica: {str(e)}"
+        }), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
