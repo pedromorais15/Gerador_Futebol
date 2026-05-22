@@ -27,7 +27,7 @@ def generate_player_scout(jogador, esquema_proprio, estilo_time, caracteristicas
     )
     
     response = client.models.generate_content(
-        model="gemini-3.1-flash-lite",
+        model="gemini-3.5-flash",
         contents=conteudo_prompt,
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_INSTRUCTION,
