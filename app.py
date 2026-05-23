@@ -33,7 +33,7 @@ def generate_player_scout(jogador, esquema_proprio, estilo_time, caracteristicas
     )
 
     response = client.models.generate_content(
-        model="gemini-2.0-flash-lite",
+        model="gemini-3.1-flash-lite",
         contents=conteudo_prompt,
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_INSTRUCTION,
